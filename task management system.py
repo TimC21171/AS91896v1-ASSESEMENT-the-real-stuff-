@@ -89,12 +89,15 @@ def question(given_string, options):
     response = easygui.buttonbox(given_string, choices=options)
     return response
 
+def show_all(data):
+    print(data["string"])
+
 options = {
     
     "See project progress report":{
         
         "FUNCTION": show_all,
-        "PARAMETERS": {},
+        "PARAMETERS": {"string": "KJASNDJKASND"},
         
     }
     
