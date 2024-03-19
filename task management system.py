@@ -8,7 +8,7 @@ tasks = {
         
         "TITLE": "Design Homepage",
         "DESCRIPTION": "Create a mockup of the homepage",
-        "ASSIGNEE": "JSM",
+        "ASSIGNEE": ["JSM"],
         "PRIORITY": "3",
         "STATUS": "In progress",
         
@@ -18,7 +18,7 @@ tasks = {
         
         "TITLE": "Implement Login page",
         "DESCRIPTION": "Create the Login page for the website",
-        "ASSIGNEE": "JSM",
+        "ASSIGNEE": ["JSM"],
         "PRIORITY": "3",
         "STATUS": "Blocked",
         
@@ -28,7 +28,7 @@ tasks = {
         
         "TITLE": "Fix navigation",
         "DESCRIPTION": "Fix tha navigation menu to be more user-friendly",
-        "ASSIGNEE": "None",
+        "ASSIGNEE": None,
         "PRIORITY": "1",
         "STATUS": "Not started",
         
@@ -38,7 +38,7 @@ tasks = {
         
         "TITLE": "Add payment processing",
         "DESCRIPTION": "Implement payment processing for the website",
-        "ASSIGNEE": "JLO",
+        "ASSIGNEE": ["JLO"],
         "PRIORITY": "",
         "STATUS": "In progress",
         
@@ -48,7 +48,7 @@ tasks = {
         
         "TITLE": "Create an About Us page",
         "DESCRIPTION": "Create a page with information about the company",
-        "ASSIGNEE": "BDI",
+        "ASSIGNEE": ["BDI"],
         "PRIORITY": "1",
         "STATUS": "Blocked",
         
@@ -89,15 +89,61 @@ def question(given_string, options):
     response = easygui.buttonbox(given_string, choices=options)
     return response
 
-def show_all(data):
-    print(data["string"])
+def show_all():
+    
+    final_str = f""
+    
+    for task_id in tasks:
+        final_str += f"\n\n{task_id}: \n\n"
+        for task_id_values in tasks[task_id]:
+            final_str += f"{task_id_values}: {tasks[task_id][task_id_values]}\n"
+            
+    easygui.msgbox(final_str)
+    
+def add_task():
+    
+    task_number = 1
+    for task_number in range(len(tasks)):
+        task_number += 1
+    
+    tasks[f"T{task_number}"] = {}
+    
+    possible_assignee = []
+    
+    
+    for possible_member in team_members:
+        possible_assignee.append(f"{possible_member} ({team_members[possible_member]['Name']})")
+
+        
+    new_task_values = [["Give a title for this new task: ", "TITLE", None], 
+                       ["Give a description for this new task: ", "DESCRIPTION", None],
+                       ["Add people to work on this task", "ASSIGNEE", possible_assignee],
+                       ["From 1-3, how important is this task?", "PRIORITY"],
+                       ["Choose a status for this task", "STATUS", 
+                        ["In progress", "Not started", "Blocked"]]]
+        
+    for i in range(len(new_task_values)):
+        if new_task_values[i][1] == "ASSIGNEE":
+            chosen_member = ""
+            already_looped = False
+            while chosen_member != "(Stop adding members)" or chosen_member != None:
+                print("asdasd")
+    
+    
 
 options = {
     
     "See project progress report":{
         
         "FUNCTION": show_all,
-        "PARAMETERS": {"string": "KJASNDJKASND"},
+        "PARAMETERS": {},
+        
+    },
+    
+    "Add new task":{
+        
+        "FUNCTION": add_task,
+        "PARAMETERS": {},
         
     }
     
