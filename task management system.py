@@ -98,6 +98,7 @@ def show_all(data):
             final_str += f"\n\n{id}: \n\n"
             for values in data["parent"][id]:
                 final_str += f"{values}: {data["parent"][id][values]}\n"
+                
     elif data["data type"] == "keys":
         final_str += f"{[data["key"]]}\n\n"
         for val in data["parent"][data["key"]]:
@@ -111,17 +112,19 @@ def add_task():
     task_number = len(tasks) + 1
     final_task_number = f"T{task_number}"
     tasks[final_task_number] = {}
-    
-    possible_assignee = []
-    
+
+    temp_members_dict = {}
     
     for possible_member in team_members:
-        possible_assignee.append(f"{possible_member} ({team_members[possible_member]['Name']})")
-
+        temp_members_dict[possible_member] = {}
+        temp_members_dict[possible_member]["NAME"] = team_members[possible_member]['Name']
+        
+    temp_members_dict["None"] = {}
+    temp_members_dict["(Stop adding members)"] = {}
         
     new_task_values = [["Give a title for this new task: ", "TITLE", None], 
                        ["Give a description for this new task: ", "DESCRIPTION", None],
-                       ["Add people to work on this task", "ASSIGNEE", possible_assignee],
+                       ["Add people to work on this task", "ASSIGNEE"],
                        ["From 1-3, how important is this task?", "PRIORITY"],
                        ["Choose a status for this task", "STATUS", 
                         ["In progress", "Not started", "Blocked"]]]
@@ -130,17 +133,18 @@ def add_task():
         if new_task_values[i][1] == "ASSIGNEE":
             chosen_member = ""
             looped_once = False
-        
-            member_buttons = new_task_values[i][2]
-            member_buttons.append("None")
-            member_buttons.append("(Stop adding members)")
             
             tasks[final_task_number][new_task_values[i][1]] = []
             
             while True:
                     
-                chosen_member = easygui.buttonbox(new_task_values[i][0], 
-                choices=member_buttons)
+                chosen_member = search({
+            "question": "Choose a member to pick from",
+            "options": list(temp_members_dict),
+            "dict": temp_members_dict,
+            "forceSearchType": "buttons",
+            "shouldReturn": True,
+        })
                 
                 if chosen_member == "None" or chosen_member == "(Stop adding members)":
                     if chosen_member == "None":
@@ -148,22 +152,16 @@ def add_task():
                     break
                 
                 else:
-                    
-                    converted_member_var = ""
-                    
-                    for member_id in team_members:
-                        if team_members[member_id]["Name"] in chosen_member and member_id in chosen_member:
-                            converted_member_var = member_id
 
-                    tasks[final_task_number][new_task_values[i][1]].append(converted_member_var)
-                    team_members[converted_member_var]["Tasks assigned"].append(final_task_number)
-                    member_buttons.remove(chosen_member)
-                    print(len(member_buttons))
-                    if len(member_buttons) <= 1:
+                    tasks[final_task_number][new_task_values[i][1]].append(chosen_member)
+                    team_members[chosen_member]["Tasks assigned"].append(final_task_number)
+                    del temp_members_dict[chosen_member]
+                    
+                    if len(temp_members_dict) <= 1:
                         break
                     
                     if looped_once == False:
-                        member_buttons.remove("None")
+                        del temp_members_dict["None"]
                         looped_once = True
                 
         elif new_task_values[i][1] == "PRIORITY":
@@ -184,23 +182,33 @@ def add_task():
             entered_task_val = str(easygui.enterbox(new_task_values[i][0]))
             tasks[final_task_number][new_task_values[i][1]] = entered_task_val
     
-    final_string = f"{final_task_number}: \n\n"
+    show_all({"parent": tasks, "data type": "keys", "key": final_task_number})
+        
+
+
+def update_task():
+    chosen_task = search({
+            "question": "Choose a member to pick from",
+            "options": list(tasks),
+            "dict": tasks,
+            "forceSearchType": "None",
+            "shouldReturn": True,
+        })
     
-    for task_values in tasks[final_task_number]:
-        final_string += f"{task_values}: {tasks[final_task_number][task_values]}\n"
-    
-    easygui.msgbox(final_string)
-        
-        
-        
+    for value in tasks[chosen_task]:
+        new_value = easygui.enterbox("")
+
         
 def search(data):
     
     search_types_list = ["Button search", "Search through typing"]
-    search_type = easygui.buttonbox("Pick a search type: ", choices= search_types_list)
+    search_type = ""
+
+    if data["forceSearchType"] == "None":
+        search_type = easygui.buttonbox("Pick a search type: ", choices= search_types_list)
     
     #button search
-    if search_type == search_types_list[0]:
+    if search_type == search_types_list[0] or data["forceSearchType"] == "buttons":
         chosen_val = easygui.buttonbox(data["question"], choices=data["options"])
         if data["shouldReturn"]:
             return chosen_val
@@ -208,7 +216,7 @@ def search(data):
             show_all({"parent": data["dict"], "data type": "keys", "key": chosen_val})
          
     #typing search
-    else:
+    elif search_type == search_types_list[1] or data["forceSearchType"] == "typing":
         
         while True:
             chosen_val = str(easygui.enterbox(data["question"]))
@@ -245,7 +253,6 @@ options = {
             
             "parent": tasks,
             "data type": "dict",
-            "keys": None,
             
             },
         
@@ -258,6 +265,7 @@ options = {
             "question": "What member are you searching for?",
             "options": list(team_members),
             "dict": team_members,
+            "forceSearchType": "None",
             "shouldReturn": False,
         },  
         
