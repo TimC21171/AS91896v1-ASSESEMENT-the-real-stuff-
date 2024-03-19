@@ -97,12 +97,12 @@ def show_all(data):
         for id in data["parent"]:
             final_str += f"\n\n{id}: \n\n"
             for values in data["parent"][id]:
-                final_str += f"{values}: {data["parent"][id][values]}\n"
+                final_str += f"{values}: {data['parent'][id][values]}\n"
                 
     elif data["data type"] == "keys":
-        final_str += f"{[data["key"]]}\n\n"
+        final_str += f"{[data['key']]}\n\n"
         for val in data["parent"][data["key"]]:
-            final_str += f"{val}: {data["parent"][data["key"]][val]}\n"
+            final_str += f"{val}: {data['parent'][data['key']][val]}\n"
             
             
     easygui.msgbox(final_str)
