@@ -112,80 +112,100 @@ def add_task():
     task_number = len(tasks) + 1
     final_task_number = f"T{task_number}"
     tasks[final_task_number] = {}
-
-    temp_members_dict = {}
     
-    for possible_member in team_members:
-        temp_members_dict[possible_member] = {}
-        temp_members_dict[possible_member]["NAME"] = team_members[possible_member]['Name']
-        
-    temp_members_dict["None"] = {}
-    temp_members_dict["(Stop adding members)"] = {}
-        
-    new_task_values = [["Give a title for this new task: ", "TITLE", None], 
-                       ["Give a description for this new task: ", "DESCRIPTION", None],
-                       ["Add people to work on this task", "ASSIGNEE"],
-                       ["From 1-3, how important is this task?", "PRIORITY"],
-                       ["Choose a status for this task", "STATUS", 
-                        ["In progress", "Not started", "Blocked"]]]
-        
-    for i in range(len(new_task_values)):
-        if new_task_values[i][1] == "ASSIGNEE":
-            chosen_member = ""
-            looped_once = False
-            
-            tasks[final_task_number][new_task_values[i][1]] = []
-            
-            while True:
-                    
-                chosen_member = search({
-            "question": "Choose a member to pick from",
-            "options": list(temp_members_dict),
-            "dict": temp_members_dict,
-            "forceSearchType": "buttons",
-            "shouldReturn": True,
-        })
-                
-                if chosen_member == "None" or chosen_member == "(Stop adding members)":
-                    if chosen_member == "None":
-                        tasks[final_task_number][new_task_values[i][1]] = chosen_member
-                    break
-                
-                else:
-
-                    tasks[final_task_number][new_task_values[i][1]].append(chosen_member)
-                    team_members[chosen_member]["Tasks assigned"].append(final_task_number)
-                    del temp_members_dict[chosen_member]
-                    
-                    if len(temp_members_dict) <= 1:
-                        break
-                    
-                    if looped_once == False:
-                        del temp_members_dict["None"]
-                        looped_once = True
-                
-        elif new_task_values[i][1] == "PRIORITY":
-            while True:
-                priority = int(easygui.integerbox(new_task_values[i][0]))
-
-                if priority > 0 and priority <= 3:
-                    tasks[final_task_number][new_task_values[i][1]] = priority
-                    break
-                else:
-                    easygui.msgbox("Out of range. Enter values between 1-3")
-            
-        elif new_task_values[i][1] == "STATUS":
-            given_status = easygui.buttonbox(new_task_values[i][0], choices=new_task_values[i][2])
-            tasks[final_task_number][new_task_values[i][1]] = given_status
-            
-        else:
-            entered_task_val = str(easygui.enterbox(new_task_values[i][0]))
-            tasks[final_task_number][new_task_values[i][1]] = entered_task_val
+    edit_key_val({"input_data_key": final_task_number, "data type": "task", "parent": None})
     
     show_all({"parent": tasks, "data type": "keys", "key": final_task_number})
         
+def edit_key_val(data):
+    
+    if data["data type"] == "task":
+        
+        temp_members_dict = {}
+        
+        for possible_member in team_members:
+            temp_members_dict[possible_member] = {}
+            temp_members_dict[possible_member]["NAME"] = team_members[possible_member]['Name']
+            
+        temp_members_dict["None"] = {}
+        temp_members_dict["(Stop adding members)"] = {}
 
+        new_task_values = [["Give a title for this new task: ", "TITLE", None], 
+                        ["Give a description for this new task: ", "DESCRIPTION", None],
+                        ["Add people to work on this task", "ASSIGNEE"],
+                        ["From 1-3, how important is this task?", "PRIORITY"],
+                        ["Choose a status for this task", "STATUS", 
+                            ["In progress", "Not started", "Blocked"]]]
+            
+        for i in range(len(new_task_values)):
+            if new_task_values[i][1] == "ASSIGNEE":
+                chosen_member = ""
+                looped_once = False
+                
+                tasks[data["input_data_key"]][new_task_values[i][1]] = []
+                
+                while True:
+                        
+                    chosen_member = search({
+                "question": "Choose a member to pick from",
+                "options": list(temp_members_dict),
+                "dict": temp_members_dict,
+                "forceSearchType": "buttons",
+                "shouldReturn": True,
+            })
+                    
+                    if chosen_member == "None" or chosen_member == "(Stop adding members)":
+                        if chosen_member == "None":
+                            tasks[data["input_data_key"]][new_task_values[i][1]] = chosen_member
+                        break
+                    
+                    else:
 
+                        tasks[data["input_data_key"]][new_task_values[i][1]].append(chosen_member)
+                        team_members[chosen_member]["Tasks assigned"].append(data["input_data_key"])
+                        del temp_members_dict[chosen_member]
+                        
+                        if len(temp_members_dict) <= 1:
+                            break
+                        
+                        if looped_once == False:
+                            del temp_members_dict["None"]
+                            looped_once = True
+                    
+            elif new_task_values[i][1] == "PRIORITY":
+                while True:
+                    priority = int(easygui.integerbox(new_task_values[i][0]))
+
+                    if priority > 0 and priority <= 3:
+                        tasks[data["input_data_key"]][new_task_values[i][1]] = priority
+                        break
+                    else:
+                        easygui.msgbox("Out of range. Enter values between 1-3")
+                
+            elif new_task_values[i][1] == "STATUS":
+                given_status = easygui.buttonbox(new_task_values[i][0], choices=new_task_values[i][2])
+                tasks[data["input_data_key"]][new_task_values[i][1]] = given_status
+                
+            else:
+                entered_task_val = str(easygui.enterbox(new_task_values[i][0]))
+                tasks[data["input_data_key"]][new_task_values[i][1]] = entered_task_val
+    
+    elif data["data type"] == "other" and data["parent"] != None:
+        
+        chosen_id = search({
+            "question": "Choose from the given to edit:",
+            "options": list(data["parent"]),
+            "dict": data["parent"],
+            "forceSearchType": "buttons",
+            "shouldReturn": True,
+        })
+        
+        for val_key in data["parent"][chosen_id]:
+            new_value = easygui.enterbox(f"Enter a new value for {id}:")
+            data["parent"][val_key] = new_value
+            
+        show_all({"parent": data["parent"], "data type": "keys", "key": chosen_id})
+            
 def update_task():
     chosen_task = search({
             "question": "Choose a member to pick from",
@@ -271,6 +291,19 @@ options = {
         
     },
     
+    "Search for Tasks":{
+      
+        "FUNCTION": search,
+        "PARAMETERS": {
+            "question": "What task are you searching for?",
+            "options": list(tasks),
+            "dict": tasks,
+            "forceSearchType": "None",
+            "shouldReturn": False,
+        },  
+        
+    },
+    
     "Add new task":{
         
         "FUNCTION": add_task,
@@ -279,6 +312,7 @@ options = {
     }
     
 }
+
 
 given_options = []
 for options_functions in options:
