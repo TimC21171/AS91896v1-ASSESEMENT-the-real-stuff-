@@ -1,4 +1,4 @@
-
+#new change: 26/3/24
 
 import easygui
 
@@ -85,9 +85,25 @@ team_members = {
 }
 
 
-def question(given_string, options):
-    response = easygui.buttonbox(given_string, choices=options)
-    return response
+def question(data):
+    
+    response = None
+    
+    while response == None:
+
+        if data["input type"] == "typing":
+            response = easygui.enterbox(data["given string"])
+            
+        elif data["input type"] == "buttons":
+            response = easygui.buttonbox(data["given string"], choices=data["options"])
+            
+        elif data["input type"] == "int":
+            response = easygui.integerbox(data["given string"])
+        
+        if response != None:
+            return response
+        else:
+            easygui.msgbox("Please enter an input")
 
 def show_all(data):
     
@@ -147,12 +163,12 @@ def edit_key_val(data):
                 while True:
                         
                     chosen_member = search({
-                "question": "Choose a member to pick from",
-                "options": list(temp_members_dict),
-                "dict": temp_members_dict,
-                "forceSearchType": "buttons",
-                "shouldReturn": True,
-            })
+                    "question": "Choose a member to pick from",
+                    "options": list(temp_members_dict),
+                    "dict": temp_members_dict,
+                    "forceSearchType": "buttons",
+                    "shouldReturn": True,
+                    })
                     
                     if chosen_member == "None" or chosen_member == "(Stop adding members)":
                         if chosen_member == "None":
@@ -174,7 +190,11 @@ def edit_key_val(data):
                     
             elif new_task_values[i][1] == "PRIORITY":
                 while True:
-                    priority = int(easygui.integerbox(new_task_values[i][0]))
+                    priority =  question({
+                        "input type": "int",
+                        "options": None,
+                        "given string": new_task_values[i][0]
+                    })
 
                     if priority > 0 and priority <= 3:
                         tasks[data["input_data_key"]][new_task_values[i][1]] = priority
@@ -183,11 +203,23 @@ def edit_key_val(data):
                         easygui.msgbox("Out of range. Enter values between 1-3")
                 
             elif new_task_values[i][1] == "STATUS":
-                given_status = easygui.buttonbox(new_task_values[i][0], choices=new_task_values[i][2])
+                
+                given_status =  question({
+                    "input type": "buttons",
+                    "options": new_task_values[i][2],
+                    "given string": new_task_values[i][0]
+                })
+                
                 tasks[data["input_data_key"]][new_task_values[i][1]] = given_status
                 
             else:
-                entered_task_val = str(easygui.enterbox(new_task_values[i][0]))
+                                
+                entered_task_val =  question({
+                    "input type": "typing",
+                    "options": None,
+                    "given string": new_task_values[i][0]
+                })
+                
                 tasks[data["input_data_key"]][new_task_values[i][1]] = entered_task_val
     
     elif data["data type"] == "other" and data["parent"] != None:
@@ -201,7 +233,13 @@ def edit_key_val(data):
         })
         
         for val_key in data["parent"][chosen_id]:
-            new_value = easygui.enterbox(f"Enter a new value for {id}:")
+        
+            new_value =  question({
+                "input type": "typing",
+                "options": None,
+                "given string": f"Enter a new value for {val_key}:"
+            })
+            
             data["parent"][val_key] = new_value
             
         show_all({"parent": data["parent"], "data type": "keys", "key": chosen_id})
@@ -225,11 +263,21 @@ def search(data):
     search_type = ""
 
     if data["forceSearchType"] == "None":
-        search_type = easygui.buttonbox("Pick a search type: ", choices= search_types_list)
+        search_type =  question({
+            "input type": "buttons",
+            "options": search_types_list,
+            "given string": "Pick a search type: "
+        })
     
     #button search
     if search_type == search_types_list[0] or data["forceSearchType"] == "buttons":
-        chosen_val = easygui.buttonbox(data["question"], choices=data["options"])
+        
+        chosen_val =  question({
+            "input type": "buttons",
+            "options": data["options"],
+            "given string": data["question"]
+        })
+        
         if data["shouldReturn"]:
             return chosen_val
         else:
@@ -239,7 +287,11 @@ def search(data):
     elif search_type == search_types_list[1] or data["forceSearchType"] == "typing":
         
         while True:
-            chosen_val = str(easygui.enterbox(data["question"]))
+            chosen_val =  question({
+                "input type": "typing",
+                "options": None,
+                "given string": data["question"]
+            })
             
             if chosen_val.isnumeric() == False:
                 exists = False
@@ -321,7 +373,11 @@ given_options.append("(Leave)")
 
 users_choice = ""
 while True:
-    users_choice = question("What would you like to do?", given_options)
+    users_choice =  question({
+        "input type": "buttons",
+        "options": given_options,
+        "given string": "What would you like to do?"
+    })
     if users_choice != "(Leave)":
         for functions in options:
             if functions == users_choice:
