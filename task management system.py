@@ -2,7 +2,7 @@
 
 
 
-import easygui
+import easygui, sys
 
 #tasks dictionary
 tasks = {
@@ -92,10 +92,20 @@ team_members = {
 #questions function
 def question(data):
     
+    
+    """ 
+    Quesion function recieves input from the data parameter,
+    and based on the input into the function it executes
+    specific tasks.
+    """
+    
     response = None
     
+    #while loop that prevents invalid responses such as None
     while response == None:
 
+        #executes different tasks based on the "input type" key from the data parameter
+        
         if data["input type"] == "typing":
             response = easygui.enterbox(data["given string"])
             
@@ -105,35 +115,74 @@ def question(data):
         elif data["input type"] == "int":
             response = easygui.integerbox(data["given string"])
         
+        #returns response var if user input is valid
         if response != None:
             return response
+        
+        #otherwise while loop continues
         else:
-            easygui.msgbox("Please enter an input")
+            leave = None
+            
+            #while loop that prevents invalid responses such as None
+            while response == None:
+                leave = easygui.buttonbox("Are you sure you want to leave?", choices = ["Yes", "No"])
+                
+                if leave != None:
+                    if leave == "Yes":
+                        sys.exit()
+                    else:
+                        break
+                
+                else:
+                    easygui.msgbox("Please enter an input")
 
 def show_all(data):
     
+    """
+    show_all function displays text from dictionaries
+    or values inside of a key based on the input into 
+    the function
+    """
+    
     final_str = f""
     
+    #executes different for loops depending on the desired settings
+    
+    #executes if input wants a whole dictionary to be displayed
     if data["data type"] == "dict":
         for id in data["parent"]:
             final_str += f"\n\n{id}: \n\n"
             for values in data["parent"][id]:
                 final_str += f"{values}: {data['parent'][id][values]}\n"
                 
+    #executes if input wants to only display values in a key
     elif data["data type"] == "keys":
         final_str += f"{[data['key']]}\n\n"
         for val in data["parent"][data["key"]]:
             final_str += f"{val}: {data['parent'][data['key']][val]}\n"
             
-            
+
     easygui.msgbox(final_str)
     
+
 def add_task():
     
+    
+    """
+    Automates making a new task ID
+    as well as asks the user input
+    to set for the values in the task
+    ID key
+    """
+    
+    #gives a new task ID based on the amount of tasks there are
     task_number = len(tasks) + 1
     final_task_number = f"T{task_number}"
+    
+    #sets the formed task ID as an actual key part of the tasks dict
     tasks[final_task_number] = {}
     
+    #calls function that edits the newly made task ID key
     edit_key_val({"input_data_key": final_task_number, "data type": "task", "parent": None, "task type": "new"})
     
     show_all({"parent": tasks, "data type": "keys", "key": final_task_number})
@@ -165,21 +214,54 @@ def check_completed(given_task):
             if exists:
                 team_members[members]["Tasks assigned"].remove(given_task)
         
+def progress_report():
     
+    data = {
+      
+      
+        "PROGRESS_DATA":{
+            
+            "In progress": {"number of tasks": 0},
+            "Not started": {"number of tasks": 0},
+            "Blocked": {"number of tasks": 0},
+            "Completed": {"number of tasks": 0},  
+            
+        }
+        
+    }
+    
+    for task_id in tasks:
+        data["PROGRESS_DATA"][tasks[task_id]["STATUS"]]["number of tasks"] += 1
+        
+    show_all({"parent": data, "data type": "dict"})
+        
         
 def edit_key_val(data):
     
+    """
+    function that makes/edits values in a given key
+    from the data parameter
+    """
+    
+    #executes if input is specifically for editing a task
     if data["data type"] == "task":
         
+        #temporary members dict var
         temp_members_dict = {}
         
         for possible_member in team_members:
+
+            #adds a team member to the temporary dict
+            #this will be used to help display the buttons nicely
             temp_members_dict[possible_member] = {}
             temp_members_dict[possible_member]["NAME"] = team_members[possible_member]['Name']
             
+        #adds the option of None
         temp_members_dict["None"] = {}
         temp_members_dict["(Stop adding members)"] = {}
+        original_temp_members_len = len(temp_members_dict)
 
+        #2D list that contains specific questions and values for editing the task values
         new_task_values = [["Give a title for this new task: ", "TITLE", None], 
                         ["Give a description for this new task: ", "DESCRIPTION", None],
                         ["Add people to work on this task", "ASSIGNEE"],
@@ -187,15 +269,47 @@ def edit_key_val(data):
                         ["Choose a status for this task", "STATUS", 
                             ["In progress", "Not started", "Blocked", "Completed"]]]
             
+        #loops through the new_task_values list
         for i in range(len(new_task_values)):
+            
+            
+            """ 
+            for loop executes specific code based on
+            the i[1] value from new_task_values list
+            """
+            
+            #executes if the looped variable i[1] is currently at "ASSIGNEE"
             if new_task_values[i][1] == "ASSIGNEE":
+                
+                #empty variable
                 chosen_member = ""
+                
+                #flag
                 looped_once = False
                 
+                #resets the tasks: "ASIGNEE" value as an empty list
                 tasks[data["input_data_key"]][new_task_values[i][1]] = []
                 
+                #infinite loop
                 while True:
+                    
+                    """ 
+                    Loop continues going through
+                    until user decides to stop adding members
+                    or until all members from the
+                    team_members dictionary have been chosen
+                    """
                         
+                    """ 
+                    Calls the search function and searches the
+                    temporary_member_dict, search function data
+                    inputs to ask the user: 'Choose a member to pick from',
+                    to only make the user to navigate their searching
+                    experience using buttons with the set 'forceSearchType' value
+                    and tells the search function to return the chosen option
+                    """
+                    
+                    #chosen_member variable hold returned value from search function
                     chosen_member = search({
                     "question": "Choose a member to pick from",
                     "options": list(temp_members_dict),
@@ -205,8 +319,8 @@ def edit_key_val(data):
                     })
                     
                     if chosen_member == "None" or chosen_member == "(Stop adding members)":
-                        if chosen_member == "None":
-                            tasks[data["input_data_key"]][new_task_values[i][1]] = chosen_member
+                        if chosen_member == "None" or chosen_member == "(Stop adding members)" and len(temp_members_dict) == original_temp_members_len:
+                            tasks[data["input_data_key"]][new_task_values[i][1]] = "None"
                         break
                     
                     else:
@@ -351,7 +465,7 @@ def search(data):
 
 options = {
     
-    "See project progress report":{
+    "See all tasks":{
         
         "FUNCTION": show_all,
         "PARAMETERS": {
@@ -402,6 +516,13 @@ options = {
         "PARAMETERS": {},
         
     },
+    
+    "Show progress report":{
+        
+        "FUNCTION": progress_report,
+        "PARAMETERS": {}
+        
+    }
     
 }
 
