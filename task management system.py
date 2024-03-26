@@ -1,7 +1,10 @@
 #new change: 26/3/24
 
+
+
 import easygui
 
+#tasks dictionary
 tasks = {
     
     "T1": {
@@ -56,6 +59,7 @@ tasks = {
     
 }
 
+#team members dictionary
 team_members = {
     
     "JSM": {
@@ -85,6 +89,7 @@ team_members = {
 }
 
 
+#questions function
 def question(data):
     
     response = None
@@ -129,9 +134,38 @@ def add_task():
     final_task_number = f"T{task_number}"
     tasks[final_task_number] = {}
     
-    edit_key_val({"input_data_key": final_task_number, "data type": "task", "parent": None})
+    edit_key_val({"input_data_key": final_task_number, "data type": "task", "parent": None, "task type": "new"})
     
     show_all({"parent": tasks, "data type": "keys", "key": final_task_number})
+    
+def update_task():
+    
+    chosen_task = search({
+    "question": "Choose a task to update",
+    "options": list(tasks),
+    "dict": tasks,
+    "forceSearchType": "buttons",
+    "shouldReturn": True,
+    })
+    
+    edit_key_val({"input_data_key": chosen_task, "data type": "task", "parent": None, "task type": "existing"})
+    
+    for members in team_members:
+        for i in range(len(team_members[members]["Tasks assigned"])):
+            if chosen_task in team_members[members]["Tasks assigned"][i]:
+                if members in tasks[chosen_task]["ASSIGNEE"] == False:
+                    team_members[members]["Tasks assigned"].remove(chosen_task)
+
+    show_all({"parent": tasks, "data type": "keys", "key": chosen_task})
+    
+def check_completed(given_task):
+    if tasks[given_task]["STATUS"] == "Completed" or tasks[given_task]["ASSIGNEE"] == "None":
+        for members in team_members:
+            exists = given_task in team_members[members]["Tasks assigned"]
+            if exists:
+                team_members[members]["Tasks assigned"].remove(given_task)
+        
+    
         
 def edit_key_val(data):
     
@@ -151,7 +185,7 @@ def edit_key_val(data):
                         ["Add people to work on this task", "ASSIGNEE"],
                         ["From 1-3, how important is this task?", "PRIORITY"],
                         ["Choose a status for this task", "STATUS", 
-                            ["In progress", "Not started", "Blocked"]]]
+                            ["In progress", "Not started", "Blocked", "Completed"]]]
             
         for i in range(len(new_task_values)):
             if new_task_values[i][1] == "ASSIGNEE":
@@ -178,7 +212,9 @@ def edit_key_val(data):
                     else:
 
                         tasks[data["input_data_key"]][new_task_values[i][1]].append(chosen_member)
-                        team_members[chosen_member]["Tasks assigned"].append(data["input_data_key"])
+                        exists = data["input_data_key"] in team_members[chosen_member]["Tasks assigned"]
+                        if exists == False:    
+                            team_members[chosen_member]["Tasks assigned"].append(data["input_data_key"])
                         del temp_members_dict[chosen_member]
                         
                         if len(temp_members_dict) <= 1:
@@ -210,9 +246,16 @@ def edit_key_val(data):
                     "given string": new_task_values[i][0]
                 })
                 
+                if given_status == "Completed":
+                    tasks[data["input_data_key"]]["ASSIGNEE"] = "None"
+                    for members in team_members:
+                        exists = data["input_data_key"] in team_members[members]["Tasks assigned"]
+                        if exists:
+                            team_members[members]["Tasks assigned"].remove(data["input_data_key"])
+                
                 tasks[data["input_data_key"]][new_task_values[i][1]] = given_status
                 
-            else:
+            elif data["task type"] == "new":
                                 
                 entered_task_val =  question({
                     "input type": "typing",
@@ -221,6 +264,8 @@ def edit_key_val(data):
                 })
                 
                 tasks[data["input_data_key"]][new_task_values[i][1]] = entered_task_val
+                
+        check_completed(data["input_data_key"])
     
     elif data["data type"] == "other" and data["parent"] != None:
         
@@ -243,18 +288,6 @@ def edit_key_val(data):
             data["parent"][val_key] = new_value
             
         show_all({"parent": data["parent"], "data type": "keys", "key": chosen_id})
-            
-def update_task():
-    chosen_task = search({
-            "question": "Choose a member to pick from",
-            "options": list(tasks),
-            "dict": tasks,
-            "forceSearchType": "None",
-            "shouldReturn": True,
-        })
-    
-    for value in tasks[chosen_task]:
-        new_value = easygui.enterbox("")
 
         
 def search(data):
@@ -361,7 +394,14 @@ options = {
         "FUNCTION": add_task,
         "PARAMETERS": {},
         
-    }
+    },
+    
+    "Update a task":{
+        
+        "FUNCTION": update_task,
+        "PARAMETERS": {},
+        
+    },
     
 }
 
