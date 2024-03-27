@@ -200,11 +200,14 @@ def update_task():
     
     chosen_task = search({
     "question": "Choose a task to update",
-    "options": list(tasks),
+    "options": tasks_title_buttons,
+    "displayType": "accurate",
     "dict": tasks,
     "forceSearchType": "buttons",
     "shouldReturn": True,
     })
+    
+    print(chosen_task)
     
     edit_key_val({
         "input_data_key": chosen_task, 
@@ -332,9 +335,11 @@ def edit_key_val(data):
                     # chosen_member 
                     # variable holds returned value 
                     # from search function
+                    
                     chosen_member = search({
                     "question": "Choose a member to pick from",
                     "options": list(temp_members_dict),
+                    "displayType": "None",
                     "dict": temp_members_dict,
                     "forceSearchType": "buttons",
                     "shouldReturn": True,
@@ -442,6 +447,7 @@ def edit_key_val(data):
         chosen_id = search({
             "question": "Choose from the given to edit:",
             "options": list(data["parent"]),
+            "displayType": "None",
             "dict": data["parent"],
             "forceSearchType": "buttons",
             "shouldReturn": True,
@@ -494,6 +500,15 @@ def search(data):
             "given string": data["question"]
         })
         
+        if data["displayType"] == "accurate":
+            print("test")
+            for id in data["dict"]:
+                for values in data["dict"][id]:
+                    if chosen_val == data["dict"][id][values]:
+                        chosen_val = id
+                        
+                        
+        
         if data["shouldReturn"]:
             return chosen_val
         else:
@@ -528,9 +543,11 @@ def search(data):
             
             else:
                 easygui.msgbox("Integers aren't accepted as a valid response. Try again")
-            
-        
-        
+         
+tasks_title_buttons = []
+
+for task_id in tasks:
+    tasks_title_buttons.append(tasks[task_id]["TITLE"])   
 
 options = {
     
@@ -552,6 +569,7 @@ options = {
         "PARAMETERS": {
             "question": "What member are you searching for?",
             "options": list(team_members),
+            "displayType": "None",
             "dict": team_members,
             "forceSearchType": "None",
             "shouldReturn": False,
@@ -565,6 +583,7 @@ options = {
         "PARAMETERS": {
             "question": "What task are you searching for?",
             "options": list(tasks),
+            "displayType": "accurate",
             "dict": tasks,
             "forceSearchType": "None",
             "shouldReturn": False,
