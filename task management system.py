@@ -110,7 +110,8 @@ def question(data):
             response = easygui.enterbox(data["given string"])
             
         elif data["input type"] == "buttons":
-            response = easygui.buttonbox(data["given string"], choices=data["options"])
+            response = easygui.buttonbox(data["given string"], 
+            choices=data["options"])
             
         elif data["input type"] == "int":
             response = easygui.integerbox(data["given string"])
@@ -125,7 +126,8 @@ def question(data):
             
             #while loop that prevents invalid responses such as None
             while response == None:
-                leave = easygui.buttonbox("Are you sure you want to leave?", choices = ["Yes", "No"])
+                leave = easygui.buttonbox("Are you sure you want to leave?", 
+                choices = ["Yes", "No"])
                 
                 if leave != None:
                     if leave == "Yes":
@@ -183,9 +185,16 @@ def add_task():
     tasks[final_task_number] = {}
     
     #calls function that edits the newly made task ID key
-    edit_key_val({"input_data_key": final_task_number, "data type": "task", "parent": None, "task type": "new"})
+    edit_key_val({
+        "input_data_key": final_task_number,
+        "data type": "task", 
+        "parent": None, 
+        "task type": "new"})
     
-    show_all({"parent": tasks, "data type": "keys", "key": final_task_number})
+    show_all({
+        "parent": tasks, 
+        "data type": "keys", 
+        "key": final_task_number})
     
 def update_task():
     
@@ -197,7 +206,11 @@ def update_task():
     "shouldReturn": True,
     })
     
-    edit_key_val({"input_data_key": chosen_task, "data type": "task", "parent": None, "task type": "existing"})
+    edit_key_val({
+        "input_data_key": chosen_task, 
+        "data type": "task", 
+        "parent": None, 
+        "task type": "existing"})
     
     for members in team_members:
         for i in range(len(team_members[members]["Tasks assigned"])):
@@ -205,11 +218,15 @@ def update_task():
                 if members in tasks[chosen_task]["ASSIGNEE"] == False:
                     team_members[members]["Tasks assigned"].remove(chosen_task)
 
-    show_all({"parent": tasks, "data type": "keys", "key": chosen_task})
+    show_all({
+        "parent": tasks,
+        "data type": "keys",
+        "key": chosen_task})
     
 def check_completed(given_task):
     if tasks[given_task]["STATUS"] == "Completed" or tasks[given_task]["ASSIGNEE"] == "None":
         for members in team_members:
+            print(given_task, members)
             exists = given_task in team_members[members]["Tasks assigned"]
             if exists:
                 team_members[members]["Tasks assigned"].remove(given_task)
@@ -262,12 +279,13 @@ def edit_key_val(data):
         original_temp_members_len = len(temp_members_dict)
 
         #2D list that contains specific questions and values for editing the task values
-        new_task_values = [["Give a title for this new task: ", "TITLE", None], 
-                        ["Give a description for this new task: ", "DESCRIPTION", None],
-                        ["Add people to work on this task", "ASSIGNEE"],
-                        ["From 1-3, how important is this task?", "PRIORITY"],
-                        ["Choose a status for this task", "STATUS", 
-                            ["In progress", "Not started", "Blocked", "Completed"]]]
+        new_task_values = [
+            ["Give a title for this new task: ", "TITLE", None], 
+            ["Give a description for this new task: ", "DESCRIPTION", None],
+            ["Add people to work on this task", "ASSIGNEE"],
+            ["From 1-3, how important is this task?", "PRIORITY"],
+            ["Choose a status for this task", "STATUS", 
+            ["In progress", "Not started", "Blocked", "Completed"]]]
             
         #loops through the new_task_values list
         for i in range(len(new_task_values)):
@@ -303,13 +321,17 @@ def edit_key_val(data):
                     """ 
                     Calls the search function and searches the
                     temporary_member_dict, search function data
-                    inputs to ask the user: 'Choose a member to pick from',
-                    to only make the user to navigate their searching
-                    experience using buttons with the set 'forceSearchType' value
-                    and tells the search function to return the chosen option
+                    inputs to ask the user: 'Choose a member to
+                    pick from',to only make the user to 
+                    navigate their searchingexperience using buttons 
+                    with the set 'forceSearchType' value
+                    and tells the search function to return 
+                    the chosen option
                     """
                     
-                    #chosen_member variable hold returned value from search function
+                    # chosen_member 
+                    # variable holds returned value 
+                    # from search function
                     chosen_member = search({
                     "question": "Choose a member to pick from",
                     "options": list(temp_members_dict),
@@ -318,27 +340,46 @@ def edit_key_val(data):
                     "shouldReturn": True,
                     })
                     
+                    # executes if user chooses none or
+                    # "(Stop adding members)" as their first option
+                    # also exist while loop
                     if chosen_member == "None" or chosen_member == "(Stop adding members)":
                         if chosen_member == "None" or chosen_member == "(Stop adding members)" and len(temp_members_dict) == original_temp_members_len:
                             tasks[data["input_data_key"]][new_task_values[i][1]] = "None"
                         break
-                    
+
+                    #otherwise chosen member is added into 
+                    # the "ASSIGNEES" of the new task_id
                     else:
 
                         tasks[data["input_data_key"]][new_task_values[i][1]].append(chosen_member)
                         exists = data["input_data_key"] in team_members[chosen_member]["Tasks assigned"]
                         if exists == False:    
                             team_members[chosen_member]["Tasks assigned"].append(data["input_data_key"])
+                            
+                        #deletes picked member from list of buttons 
+                        # so that user can't choose the same user again
                         del temp_members_dict[chosen_member]
                         
+                        #stops while loop if user has chosen all 
+                        # members from the team_members dict
                         if len(temp_members_dict) <= 1:
                             break
                         
+                        #sets looped_once flag to true
                         if looped_once == False:
                             del temp_members_dict["None"]
                             looped_once = True
                     
+            #if looped value i[1] from new_task_values list is == 
+            # to "PRIORITY"
             elif new_task_values[i][1] == "PRIORITY":
+                
+                """
+                While loop loops until user has inputed correct values 
+                between the boundary of 1 - 3
+                """
+                
                 while True:
                     priority =  question({
                         "input type": "int",
@@ -352,14 +393,23 @@ def edit_key_val(data):
                     else:
                         easygui.msgbox("Out of range. Enter values between 1-3")
                 
+            #if looped value i[1] from new_task_values list is == 
+            # to "STATUS"
             elif new_task_values[i][1] == "STATUS":
                 
+                #calls the question function and gives the user a 
+                # list of options from the new_task_values[i][2]' 
+                # given_status holds returned value from the question() 
+                # function
                 given_status =  question({
                     "input type": "buttons",
                     "options": new_task_values[i][2],
                     "given string": new_task_values[i][0]
                 })
                 
+                
+                #Removes all members assigned to the task when task is 
+                # set as complete
                 if given_status == "Completed":
                     tasks[data["input_data_key"]]["ASSIGNEE"] = "None"
                     for members in team_members:
@@ -369,6 +419,8 @@ def edit_key_val(data):
                 
                 tasks[data["input_data_key"]][new_task_values[i][1]] = given_status
                 
+            #elif statement lets user set the title and description of 
+            # the task if the task hasn't been made yet
             elif data["task type"] == "new":
                                 
                 entered_task_val =  question({
@@ -379,8 +431,12 @@ def edit_key_val(data):
                 
                 tasks[data["input_data_key"]][new_task_values[i][1]] = entered_task_val
                 
+        #checks if the asks
         check_completed(data["input_data_key"])
     
+    #if data inputed into the function is not a task and rather a 
+    # normal dictionary, it will just default to letting the user 
+    # change values in the chosen key
     elif data["data type"] == "other" and data["parent"] != None:
         
         chosen_id = search({
@@ -401,14 +457,27 @@ def edit_key_val(data):
             
             data["parent"][val_key] = new_value
             
-        show_all({"parent": data["parent"], "data type": "keys", "key": chosen_id})
+        #calls show all function to display final edited key
+        show_all({
+            "parent": data["parent"], 
+            "data type": "keys", 
+            "key": chosen_id})
 
         
 def search(data):
     
+    """ 
+    Search function gets input from the data parameter, based on the 
+    input the user will be able to either pick what searching method 
+    they wish to use or if they would be forced into a searching method.
+    The data parameter also allows user to navigate through any 
+    given dictionary set into the data parameter.
+    """
+    
     search_types_list = ["Button search", "Search through typing"]
     search_type = ""
 
+    #executes if user is allowed to choose their method of searhcing
     if data["forceSearchType"] == "None":
         search_type =  question({
             "input type": "buttons",
